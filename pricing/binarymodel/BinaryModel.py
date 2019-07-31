@@ -3,12 +3,12 @@ from math import log, e, sqrt, pi,exp
 from scipy import stats
 import pandas as pd
 import tushare as ts
-
+import pandas_datareader.data as web
+from datetime import datetime
 
 class BinaryModel():
     '''
     定义CCR模型（二叉树模型的一种 ：
-
     '''
     def __init__(self, S, X, r, q, T, sigma, N, opt_type='call'):
         self.S = S
@@ -19,10 +19,10 @@ class BinaryModel():
         self.sigma = sigma
         self.N = N
         self.opt_type = opt_type
-        self.dt = self.T/self.N  ##步长
-        self.u = exp(self.sigma * sqrt(self.dt)) #上涨系数
-        self.d = 1/self.u   #下跌系数
-        self.prob = (exp((self.r - self.q) * self.dt) - self.d) / (self.u - self.d)
+        self.dt = float(self.T/self.N)  ##步长
+        self.u = float(exp(self.sigma * sqrt(self.dt))) #上涨系数
+        self.d = 1.0/self.u   #下跌系数
+        self.prob = (exp((self.r - self.q) * self.dt) - self.d) / float(self.u - self.d)
         self.opt_spot = dict()  #存储期权spot_price, 加快迭代速度
 
     def __maturity_price(self, n, nu):
@@ -61,7 +61,7 @@ class BinaryModel():
 
         #recusive case: compute the binomial value
         discount_factor = exp(-self.r * self.dt)
-        V_exp = self.p * self.__binomial_pricing(n+1, nu+1) \
+        V_exp = self.prob * self.__binomial_pricing(n+1, nu+1) \
                 + (1 - self.prob) * self.__binomial_pricing(n+1, nu)
         binomial = discount_factor * V_exp
 
@@ -71,26 +71,31 @@ class BinaryModel():
         return opt_america
 
     def pricing(self):
-        
-    def factorial_loop(sell, n):
-        '''
-        N的阶乘
-        :param n:
-        :return: 结果
-        '''
-        result = 1
-        for i in range(n):
-            result *= i + 1
-        return result
+        return self.__binomial_pricing(0,0)
 
-    def factorial_recurison(self, n):
-        if n ==1:
-            return n
-        else:
-            return n * self.factorial_recurison(n-1)
-
+    def run(self):
+        '''
+        模型应用
+        :return:
+        '''
 
 
 if __name__ == '__main__':
-    binaryModel = BinaryModel()
-    print binaryModel.factorial_recurison(4)
+    T = 15.0/365.0
+    N = 100.0
+    S = 2.4
+    r = 0.0246
+    q = 0.0
+    X = 2.45
+    sigma = 0.2744
+    opt_type = 'p'
+    binaryModel = BinaryModel(S, X, r, q, T, sigma, N, opt_type)
+    #print binaryModel.pricing()
+    #print binaryModel.factorial_recurison(4)
+
+    start = datetime(2017,1,1)
+    appl = web.DataReader(["GS", "AAPL"], "iex-tops")
+
+    #gs = web.DataReader("GS", "iex-last")
+    print appl.tail()
+    #print gs
