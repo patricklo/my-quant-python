@@ -94,8 +94,20 @@ if __name__ == '__main__':
     #print binaryModel.factorial_recurison(4)
 
     start = datetime(2017,1,1)
-    appl = web.DataReader(["GS", "AAPL"], "iex-tops")
+    ###https://blog.csdn.net/Smile_Smilling/article/details/79934900
+    appl = web.DataReader("AAPL", "yahoo", start)
+    appl['rtn'] = appl['Close'].pct_change()
+    appl['Volatility'] = appl['rtn'].rolling(100).std() * sqrt(252)
 
+    sigma = appl['Volatility'].iloc[-1]
+    T = 34/365
+    N = 100
+    S = 170.84
+    r = 0.0236
+    q = 0.0165
+    X = 170
+
+    binaryModel2 = BinaryModel(S, X, r, q, T, sigma, N, opt_type)
+    print(binaryModel2.pricing())
     #gs = web.DataReader("GS", "iex-last")
-    print appl.tail()
     #print gs
