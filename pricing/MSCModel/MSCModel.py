@@ -9,7 +9,8 @@ from datetime import datetime
 class MSCModel():
     '''
     Monte calo 蒙特卡洛模型
-    put option :
+    put option :认沽期权
+    call option： 认购期权
     '''
 
     def run(self):
